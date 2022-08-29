@@ -1,13 +1,29 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "~antd/dist/antd.css";
+svg {
+  vertical-align: baseline;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.ant-btn-primary {
+  background: #1890ff !important;
+}
+
+.ant-table-empty .ant-table-tbody > tr > td {
+  border: 0 !important;
+}
+
+.input-hidden div.ant-form-item-control-input {
+  height: 0px !important;
+  min-height: 0px !important;
+}
+
+.input-hidden {
+  margin-bottom: 0px !important;
+}
+
+.input-hidden .ant-form-item-control {
+  margin-bottom: 10px;
 }
