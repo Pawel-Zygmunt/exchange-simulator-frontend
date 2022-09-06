@@ -12,7 +12,16 @@ const SignInPage = () => {
   const navigate = useNavigate();
   const { setUser, user } = useAppContext();
 
+  const fetchUser = async () => {
+    const res = await fetchApi("GET", "/Auth/user");
+
+    if (res.ok) {
+      setUser(res.data);
+    }
+  };
+
   useEffect(() => {
+    if (!user) fetchUser();
     if (user) navigate("/", { replace: true });
   }, [user]);
 

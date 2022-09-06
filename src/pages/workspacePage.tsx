@@ -12,16 +12,63 @@ import {
   Space,
   Table,
 } from "antd";
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { useAppContext } from "../AppContextProvider";
 import { fetchApi } from "../utils/fetchApi";
+import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
+const baseUrl = process.env.REACT_APP_API_URL;
 
 const WorkspacePage = () => {
+  const { setUser, user } = useAppContext();
   const [orderType, setOrderType] = useState<"MarketOrder" | "LimitOrder">(
     "MarketOrder"
   );
+  const [connection, setConnection] = useState<null | HubConnection>(null);
 
-  const { setUser, user } = useAppContext();
+  useEffect(() => {
+    const connect = new HubConnectionBuilder()
+      .withUrl(`${baseUrl}/exchangeHub`)
+      .withAutomaticReconnect()
+      .build();
+
+    setConnection(connect);
+  }, []);
+
+  useEffect(() => {
+    if (connection) {
+      console.log("connection if");
+      connection
+        .start()
+        .then(() => {
+          connection.on("onPriceLevelsChanged", (price, amount) => {
+            console.log("message", price, amount);
+          });
+        })
+        .catch((error) => console.log(error));
+    }
+  }, [connection]);
+
+  const [form] = Form.useForm();
+
+  const onFormFinish = async (data: any) => {
+    const res = await fetchApi("POST", "/Orders", {
+      body: {
+        orderType,
+        orderSide: data.side,
+        quantity: data.quantity,
+        price: data?.price,
+      },
+    });
+
+    if (res.ok) {
+      toast.success("Złożono zlecenie");
+    } else {
+      toast.error("błąd podczas składania zlecenia");
+    }
+
+    form.resetFields();
+  };
 
   const menu = (
     <Menu
@@ -81,11 +128,15 @@ const WorkspacePage = () => {
           </div>
           <div className="px-[20px]">
             <Form
+              form={form}
               name="basic"
               layout="vertical"
-              onFinish={(e) => {}}
+              onFinish={onFormFinish}
               labelCol={{
                 span: 4,
+              }}
+              initialValues={{
+                side: "buy",
               }}
             >
               {orderType === "LimitOrder" && (
@@ -128,8 +179,8 @@ const WorkspacePage = () => {
                 />
               </Form.Item>
 
-              <Form.Item label="Typ:" name="type">
-                <Radio.Group defaultValue={"buy"}>
+              <Form.Item label="Typ:" name="side">
+                <Radio.Group>
                   <Space direction="vertical">
                     <Radio value={"buy"}>Kup</Radio>
                     <Radio value={"sell"}>Sprzedaj</Radio>
