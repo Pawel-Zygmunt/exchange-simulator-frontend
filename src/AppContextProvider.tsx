@@ -1,8 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
 
+type Transaction = {
+  id: string;
+};
 interface UserInterface {
   email: string;
   accountBalance: number;
+  ownedStocksAmount: number;
+  transactions: Transaction[];
 }
 
 interface ContextInterface {
