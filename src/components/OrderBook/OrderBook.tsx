@@ -86,21 +86,18 @@ const OrderBook = () => {
             }
           );
 
-          
+          connection.on("onRemovePriceLevel", (price, isBidSide) => {
+            console.log("onRemovePriceLevel", price, isBidSide);
+          });
+
+          connection.on("onCurrentPriceChange", (price) => {
+            console.log("onCurrentPriceChange", price);
+          });
         })
         .catch((error) => console.log(error));
     }
   }, [connection]);
 
-
-
-  connection.on("onRemovePriceLevel", (price, isBidSide) => {
-    console.log("onRemovePriceLevel", price, isBidSide);
-  });
-
-  connection.on("onCurrentPriceChange", (price) => {
-    console.log("onCurrentPriceChange", price);
-  });
   return (
     <>
       {!priceLevelsState && (
