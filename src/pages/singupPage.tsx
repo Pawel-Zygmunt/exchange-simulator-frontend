@@ -19,7 +19,6 @@ const SignUpPage = () => {
         position: "top-center",
         duration: 2000,
       });
-      await new Promise((r) => setTimeout(r, 2000));
 
       navigate("/signin");
     }
@@ -99,14 +98,14 @@ const SignUpPage = () => {
               loading={isSubmittingForm}
               disabled={isSubmittingForm}
             >
-              Zaloguj
+              Zarejestruj
             </Button>
           </Form.Item>
 
           <div>
             <span>Masz konto?</span>
             <Link to="/signin" className="text-sky-blue ml-[10px]">
-              Zaloguj
+              Zarejestruj
             </Link>
           </div>
         </Form>

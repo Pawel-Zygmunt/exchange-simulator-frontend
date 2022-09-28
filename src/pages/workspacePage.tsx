@@ -42,9 +42,7 @@ const WorkspacePage = () => {
       },
     });
 
-    if (res.ok) {
-      toast.success("Złożono zlecenie");
-    } else {
+    if (!res.ok) {
       toast.error("błąd podczas składania zlecenia");
     }
 
@@ -84,7 +82,7 @@ const WorkspacePage = () => {
         </h1>
         <div className="flex gap-[40px] absolute bottom-[50%] translate-y-[50%] right-[20px]">
           <div className="flex flex-col leading-none gap-[5px]">
-            <div className="flex items-center gap-[10px] text-[16px]">
+            {/* <div className="flex items-center gap-[10px] text-[16px]">
               <span className="font-semibold">Stan konta:</span>
               <span
                 className={clsx(
@@ -99,7 +97,7 @@ const WorkspacePage = () => {
               <span className="font-semibold">
                 Posiadane akcje: {user?.ownedStocksAmount}
               </span>
-            </div>
+            </div> */}
           </div>
           <Dropdown overlay={menu} trigger={["click"]} arrow>
             <Avatar
@@ -185,9 +183,7 @@ const WorkspacePage = () => {
                 <Radio.Group>
                   <Space direction="vertical">
                     <Radio value={"buy"}>Kup</Radio>
-                    <Radio disabled={!user?.ownedStocksAmount} value={"sell"}>
-                      Sprzedaj
-                    </Radio>
+                    <Radio value={"sell"}>Sprzedaj</Radio>
                   </Space>
                 </Radio.Group>
               </Form.Item>

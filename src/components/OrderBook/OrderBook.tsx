@@ -3,11 +3,8 @@ import { clsx } from "clsx";
 import { useEffect, useState } from "react";
 import { HubConnection, HubConnectionBuilder } from "@microsoft/signalr";
 import toast from "react-hot-toast";
+import { fetchApi } from "../../utils/fetchApi";
 const baseUrl = process.env.REACT_APP_API_URL;
-
-const items = Array(100)
-  .fill(0)
-  .map((_, i) => i);
 
 type PriceLevel = {
   bidSide: {
@@ -34,6 +31,18 @@ const OrderBook = () => {
   const [priceLevelsState, setPriceLevelsState] = useState<PriceLevels | null>(
     null
   );
+
+  const fetchOrderBook = async () => {
+    const res = await fetchApi("GET", "/Orders/orderbook");
+
+    if (res.ok) {
+      setPriceLevelsState(res.data);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrderBook();
+  }, []);
 
   useEffect(() => {
     const connect = new HubConnectionBuilder()
@@ -62,14 +71,6 @@ const OrderBook = () => {
               orders: { userId: string; quantity: number }[],
               quantity: number
             ) => {
-              console.log(
-                "onPriceLevelSideChange",
-                price,
-                isBidSide,
-                orders,
-                quantity
-              );
-
               setPriceLevelsState((prev) => {
                 const newState = { ...(prev || {}) };
                 newState[price] = { ...(newState[price] || {}) };
@@ -85,21 +86,21 @@ const OrderBook = () => {
             }
           );
 
-          connection.on("onRemovePriceLevel", (price, isBidSide) => {
-            console.log("onRemovePriceLevel", price, isBidSide);
-          });
-
-          connection.on("onCurrentPriceChange", (price) => {
-            console.log("onCurrentPriceChange", price);
-          });
+          
         })
         .catch((error) => console.log(error));
     }
   }, [connection]);
 
-  const sumOrders = (arr: { amount: number; userId: string }[]) =>
-    arr.reduce((prev, curr) => prev + curr.amount, 0);
 
+
+  connection.on("onRemovePriceLevel", (price, isBidSide) => {
+    console.log("onRemovePriceLevel", price, isBidSide);
+  });
+
+  connection.on("onCurrentPriceChange", (price) => {
+    console.log("onCurrentPriceChange", price);
+  });
   return (
     <>
       {!priceLevelsState && (
@@ -119,56 +120,54 @@ const OrderBook = () => {
         <tbody>
           {priceLevelsState && (
             <>
-              {Object.entries(priceLevelsState).map(([key, val], idx) => (
-                <tr className="relative" key={`row-${idx}`}>
-                  <td>
-                    <div className="absolute right-[50%] top-0 left-0 bottom-0 flex">
-                      {val.bidSide.orders.map((order, orderIdx) => {
-                        // console.log((50 / val.bidSide.quantity) * order.amount);
-                        console.log(50 / val.bidSide.quantity);
-                        return (
+              {Object.entries(priceLevelsState)
+                .sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]))
+                .map(([key, val], idx) => (
+                  <tr className="relative" key={`row-${idx}`}>
+                    <td>
+                      <div className="absolute right-[50%] top-0 left-0 bottom-0 flex">
+                        {(val?.bidSide?.orders || []).map((order, orderIdx) => {
+                          return (
+                            <div
+                              className={style.order}
+                              key={`order-${orderIdx}`}
+                              style={{
+                                width: `${
+                                  (100 / val.bidSide.quantity) * order.quantity
+                                }%`,
+                              }}
+                            >
+                              {order.quantity}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={style.priceCell}>{key}</span>
+                    </td>
+                    <td>
+                      <span className={style.priceCell}>{key}</span>
+                    </td>
+                    <td>
+                      <div className="absolute right-0 top-0 left-[50%] bottom-0 flex">
+                        {(val?.askSide?.orders || []).map((order, orderIdx) => (
                           <div
                             className={style.order}
                             key={`order-${orderIdx}`}
                             style={{
                               width: `${
-                                (100 / val.bidSide.quantity) * order.quantity
+                                (100 / val.askSide.quantity) * order.quantity
                               }%`,
                             }}
                           >
                             {order.quantity}
                           </div>
-                        );
-                      })}
-                    </div>
-                    {/* <div
-                      className={style.bidIndicator}
-                      style={{ width: "100%" }}
-                    ></div> */}
-                  </td>
-                  <td>
-                    <span className={style.priceCell}>{key}</span>
-                  </td>
-                  <td>
-                    <span className={style.priceCell}>{key}</span>
-                  </td>
-                  <td>
-                    <div className={style.askIndicator}>
-                      {(val?.askSide?.orders || []).map((order, orderIdx) => (
-                        <div
-                          className="shadow-inner overflow-hidden"
-                          key={`order-${orderIdx}`}
-                          style={{
-                            width: (50 / val.askSide.quantity) * order.quantity,
-                          }}
-                        >
-                          {order.quantity}
-                        </div>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        ))}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
             </>
           )}
         </tbody>
