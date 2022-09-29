@@ -87,11 +87,25 @@ const OrderBook = () => {
           );
 
           connection.on("onRemovePriceLevel", (price, isBidSide) => {
-            console.log("onRemovePriceLevel", price, isBidSide);
+            console.log("removePriceLevel", price, isBidSide);
+            setPriceLevelsState((prev) => {
+              const newState = { ...(prev || {}) };
+              const side = isBidSide ? "bidSide" : "askSide";
+              delete newState[price][side];
+
+              const { askSide, bidSide } = newState[price];
+              if (!askSide && !bidSide) delete newState[price];
+
+              return newState;
+            });
           });
 
           connection.on("onCurrentPriceChange", (price) => {
             console.log("onCurrentPriceChange", price);
+          });
+
+          connection.on("onCancel", (message) => {
+            toast.error(message, { duration: 5000 });
           });
         })
         .catch((error) => console.log(error));
@@ -174,7 +188,3 @@ const OrderBook = () => {
 };
 
 export default OrderBook;
-
-// w-[${Math.floor(
-//   Math.random() * 50 + 1
-// )}%]
